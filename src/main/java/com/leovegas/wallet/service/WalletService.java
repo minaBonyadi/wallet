@@ -5,6 +5,7 @@ import com.leovegas.wallet.dto.TransactionDto;
 import com.leovegas.wallet.dto.rest_response.RestResponse;
 import com.leovegas.wallet.dto.rest_response.RestResponseType;
 import com.leovegas.wallet.exception.NotFoundException;
+import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.Player;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
@@ -12,8 +13,10 @@ import com.leovegas.wallet.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -23,6 +26,8 @@ public class WalletService {
     private final PlayerRepository playerRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionStrategyFactory transactionStrategyFactory;
+
+	private final ConcurrentHashMap<Long, TransactionDto> concurrentHashMap = new ConcurrentHashMap<>();
 
     /**
      *
@@ -39,25 +44,36 @@ public class WalletService {
      * @param transactionDto
      * @return
      */
-    public RestResponse createAndRunTransaction(long playerId, TransactionDto transactionDto) {
+	@Transactional
+    public RestResponse createAndRunTransaction(Long playerId, TransactionDto transactionDto) {
 
-        PlayerTransaction playerTransaction = PlayerTransaction.builder()
-                .player(playerRepository.findById(playerId).orElseThrow(() ->
-                        new NotFoundException("Player not found!")))
-                .type(transactionDto.getType())
-                .amount(transactionDto.getAmount())
-                .build();
+		PlayerTransaction playerTransaction = createTransaction(playerId, transactionDto);
+		log.info("This transaction by id {} has just created", playerTransaction.getId());
 
-        transactionRepository.save(playerTransaction);
-        log.info("This transaction by id {} has just received", playerTransaction.getId());
+		concurrentHashMap.compute(playerId, (key, val) ->
+		{
+			transactionStrategyFactory.findTransactionStrategy(playerTransaction.getType())
+					.doTransaction(playerTransaction);
 
-        transactionStrategyFactory.findTransactionStrategy(playerTransaction.getType())
-                .doTransaction(playerTransaction);
+			log.info("This transaction by id{} has just run", playerTransaction.getId());
 
-        log.info("This transaction by id{} has just run", playerTransaction.getId());
-
-        return new RestResponse(RestResponseType.SUCCESS, "The transaction has just done!");
+			return null;
+		});
+		return new RestResponse(RestResponseType.SUCCESS, "The transaction has just done!");
     }
+
+	private PlayerTransaction createTransaction(Long playerId, TransactionDto transactionDto) {
+		concurrentHashMap.put(playerId, transactionDto);
+
+		PlayerTransaction playerTransaction = PlayerTransaction.builder()
+				.player(playerRepository.findById(playerId).orElseThrow(() ->
+						new NotFoundException("Player not found!")))
+				.type(transactionDto.getType())
+				.amount(transactionDto.getAmount())
+				.build();
+
+		return transactionRepository.save(playerTransaction);
+	}
 
     /**
      *

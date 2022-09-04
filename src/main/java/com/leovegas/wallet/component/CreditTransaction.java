@@ -2,6 +2,7 @@ package com.leovegas.wallet.component;
 
 import com.leovegas.wallet.component.strategy.TransactionStrategy;
 import com.leovegas.wallet.dto.TransactionType;
+import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;

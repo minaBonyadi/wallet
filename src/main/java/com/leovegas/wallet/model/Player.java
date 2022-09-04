@@ -22,6 +22,6 @@ public class Player {
 
     BigDecimal balance;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "player")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "player")
     List<PlayerTransaction> transactions;
 }

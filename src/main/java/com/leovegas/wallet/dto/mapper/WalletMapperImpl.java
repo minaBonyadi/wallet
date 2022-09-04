@@ -8,7 +8,10 @@ import com.leovegas.wallet.model.PlayerTransaction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WalletMapperImpl implements WalletMapper{
+import org.springframework.stereotype.Component;
+
+@Component
+public class WalletMapperImpl implements WalletMapper {
     @Override
     public PlayerDto mapPlayerToPlayerDto(Player player) {
         return PlayerDto.builder()

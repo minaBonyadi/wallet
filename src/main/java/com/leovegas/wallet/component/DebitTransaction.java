@@ -2,6 +2,7 @@ package com.leovegas.wallet.component;
 
 import com.leovegas.wallet.component.strategy.TransactionStrategy;
 import com.leovegas.wallet.dto.TransactionType;
+import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class DebitTransaction implements TransactionStrategy {
             playerRepository.save(playerTransaction.getPlayer());
 
         }else {
-            throw new  RuntimeException();
+            throw new TransactionRunningException("Sorry, player balance is not enough!");
         }
     }
 }
