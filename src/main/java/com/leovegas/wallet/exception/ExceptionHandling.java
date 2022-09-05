@@ -15,4 +15,9 @@ public class ExceptionHandling {
     protected ResponseEntity<RestResponse> handleNotFoundException(NotFoundException ex, WebRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RestResponse(RestResponseType.ERROR, ex.getMessage()));
     }
+
+    @ExceptionHandler(value = {TransactionRunningException.class})
+    protected ResponseEntity<RestResponse> handleTransactionRunningException(TransactionRunningException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new RestResponse(RestResponseType.ERROR, ex.getMessage()));
+    }
 }

@@ -4,14 +4,13 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Objects;
 
-import com.leovegas.wallet.dto.TransactionDto;
 import com.leovegas.wallet.dto.TransactionType;
 import com.leovegas.wallet.dto.mapper.WalletMapperImpl;
 import com.leovegas.wallet.exception.NotFoundException;
+import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.Player;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
-import com.leovegas.wallet.repository.TransactionRepository;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,11 +82,11 @@ class WalletApplicationTests {
 		//************************
 		//          Given
 		//************************
-		long id = samplePlayer();
+		long playerId = samplePlayer();
 		//************************
 		//          WHEN
 		//************************
-		MvcResult responseBody = mvc.perform(get("/wallet/player/"+id)
+		MvcResult responseBody = mvc.perform(get("/wallet/player/"+playerId)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -114,18 +113,19 @@ class WalletApplicationTests {
 		//************************
 		//          Given
 		//************************
-		long id = samplePlayer();
+		long playerId = samplePlayer();
 
-		String requestBody = """
-								{
-								"amount" : 2000,
-								"type": "CREDIT"
-								}
+		String requestBody =
+				"""
+					{
+					"amount" : 2000,
+					"type": "CREDIT"
+					}
 				""";
 		//************************
 		//          WHEN
 		//************************
-		MvcResult responseBody = mvc.perform(post("/wallet/"+id+"/transaction")
+		MvcResult responseBody = mvc.perform(post("/wallet/"+playerId+"/transaction")
 						.content(requestBody)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
@@ -138,7 +138,7 @@ class WalletApplicationTests {
 		String restResponse = responseBody.getResponse().getContentAsString();
 		assertThat(restResponse).contains("The transaction has just done!");
 
-		Player finalPlayer = playerRepository.findById(id).orElse(null);
+		Player finalPlayer = playerRepository.findById(playerId).orElse(null);
 		assertThat(Objects.requireNonNull(finalPlayer).getBalance().doubleValue()).isEqualTo(125456.90);
 		assertThat(finalPlayer.getName()).contains("mina");
 
@@ -155,7 +155,7 @@ class WalletApplicationTests {
 		//************************
 		//          Given
 		//************************
-		long id = samplePlayer();
+		long playerId = samplePlayer();
 
 		String requestBody = """
 								{
@@ -166,7 +166,7 @@ class WalletApplicationTests {
 		//************************
 		//          WHEN
 		//************************
-		MvcResult responseBody = mvc.perform(post("/wallet/"+id+"/transaction")
+		MvcResult responseBody = mvc.perform(post("/wallet/"+playerId+"/transaction")
 						.content(requestBody)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
@@ -179,7 +179,7 @@ class WalletApplicationTests {
 		String restResponse = responseBody.getResponse().getContentAsString();
 		assertThat(restResponse).contains("The transaction has just done!");
 
-		Player finalPlayer = playerRepository.findById(id).orElse(null);
+		Player finalPlayer = playerRepository.findById(playerId).orElse(null);
 		assertThat(Objects.requireNonNull(finalPlayer).getBalance().doubleValue()).isEqualTo(120456.9);
 		assertThat(finalPlayer.getName()).contains("mina");
 
@@ -195,7 +195,7 @@ class WalletApplicationTests {
 		//************************
 		//          Given
 		//************************
-		long id = samplePlayer();
+		long playerId = samplePlayer();
 
 		String requestBody = """
 								{
@@ -206,8 +206,39 @@ class WalletApplicationTests {
 		//************************
 		//          WHEN
 		//************************
-		MvcResult responseBody = mvc.perform(post("/wallet/"+id+"/transaction")
+		MvcResult responseBody = mvc.perform(post("/wallet/"+playerId+"/transaction")
 						.content(requestBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotAcceptable())
+				.andExpect(result -> assertTrue(result.getResolvedException() instanceof TransactionRunningException))
+				.andExpect(result -> assertEquals("Sorry, player balance is not enough!",
+						Objects.requireNonNull(result.getResolvedException()).getMessage()))
+				.andReturn();
+		//************************
+		//          THEN
+		//************************
+		// check rest response
+		String restResponse = responseBody.getResponse().getContentAsString();
+		assertThat(restResponse).contains("code");
+		assertThat(restResponse).contains("message");
+
+		assertThat(restResponse).contains("error");
+		assertThat(restResponse).contains("Sorry, player balance is not enough!");
+	}
+
+
+	@Test
+	@Description("Getting a player transactions")
+	void getAllPlayerTransactions_6() throws Exception {
+		//************************
+		//          Given
+		//************************
+		long playerId = samplePlayer();
+		//************************
+		//          WHEN
+		//************************
+		MvcResult responseBody = mvc.perform(get("/wallet/"+playerId+"/transaction")
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -217,15 +248,35 @@ class WalletApplicationTests {
 		//************************
 		// check rest response
 		String restResponse = responseBody.getResponse().getContentAsString();
-		assertThat(restResponse).contains("The transaction has just done!");
 
-		Player finalPlayer = playerRepository.findById(id).orElse(null);
-		assertThat(Objects.requireNonNull(finalPlayer).getBalance().doubleValue()).isEqualTo(120456.9);
-		assertThat(finalPlayer.getName()).contains("mina");
+		assertThat(restResponse).contains("id");
+		assertThat(restResponse).contains("amount");
+		assertThat(restResponse).contains("type");
 
-		assertEquals(finalPlayer.getTransactions().get(0).getType().name(), "CREDIT");
-		assertEquals(finalPlayer.getTransactions().get(1).getType().name(), "DEBIT");
-		assertEquals(finalPlayer.getTransactions().get(0).getAmount().doubleValue(), 543200.0);
-		assertEquals(finalPlayer.getTransactions().get(1).getAmount().doubleValue(), 3000.0);
+		assertThat(restResponse).contains("CREDIT");
+		assertThat(restResponse).contains("543200.00");
+	}
+
+	@Test
+	@Description("Getting a player transactions when player not exists")
+	void getAllPlayerTransactions_7() throws Exception {
+		//************************
+		//          Given
+		//************************
+		long playerId = samplePlayer();
+		//************************
+		//          WHEN
+		//************************
+		//************************
+		//          THEN
+		//************************
+		mvc.perform(get("/wallet/"+(playerId+1)+"/transaction")
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
+				.andExpect(result -> assertEquals("Player not found!",
+						Objects.requireNonNull(result.getResolvedException()).getMessage()))
+				.andReturn();
 	}
 }
