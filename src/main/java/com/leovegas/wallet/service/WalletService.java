@@ -27,8 +27,6 @@ public class WalletService {
     private final TransactionRepository transactionRepository;
     private final TransactionStrategyFactory transactionStrategyFactory;
 
-	private final ConcurrentHashMap<Long, TransactionDto> concurrentHashMap = new ConcurrentHashMap<>();
-
     /**
      *
      * @param playerId
@@ -49,22 +47,15 @@ public class WalletService {
 
 		PlayerTransaction playerTransaction = createTransaction(playerId, transactionDto);
 		log.info("This transaction by id {} has just created", playerTransaction.getId());
-
-		concurrentHashMap.compute(playerId, (key, val) ->
-		{
-			transactionStrategyFactory.findTransactionStrategy(playerTransaction.getType())
+		transactionStrategyFactory.findTransactionStrategy(playerTransaction.getType())
 					.doTransaction(playerTransaction);
 
-			log.info("This transaction by id{} has just run", playerTransaction.getId());
+		log.info("This transaction by id{} has just run", playerTransaction.getId());
 
-			return null;
-		});
 		return new RestResponse(RestResponseType.SUCCESS, "The transaction has just done!");
     }
 
 	private PlayerTransaction createTransaction(Long playerId, TransactionDto transactionDto) {
-		concurrentHashMap.put(playerId, transactionDto);
-
 		PlayerTransaction playerTransaction = PlayerTransaction.builder()
 				.player(playerRepository.findById(playerId).orElseThrow(() ->
 						new NotFoundException("Player not found!")))

@@ -1,9 +1,10 @@
-package com.leovegas.wallet;
+package com.leovegas.wallet.integration;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Objects;
 
+import com.leovegas.wallet.WalletApplication;
 import com.leovegas.wallet.dto.TransactionType;
 import com.leovegas.wallet.dto.mapper.WalletMapperImpl;
 import com.leovegas.wallet.exception.NotFoundException;
@@ -30,14 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         classes = {WalletApplication.class, WalletMapperImpl.class})
 @AutoConfigureMockMvc
-class WalletApplicationTests {
+class WalletServiceIT {
 
     @Autowired
     private MockMvc mvc;
 
 	@Autowired
 	private PlayerRepository playerRepository;
-
 
 	private long samplePlayer() {
 		playerRepository.deleteAll();
