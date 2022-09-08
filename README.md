@@ -51,9 +51,9 @@ PlayerTransaction:
 ## Usage
 
 you can use it by postman service call they are services which implemented :
--[ ] GET -> /wallet/player/{playerId}   -> input (playerId), output (playerDto)
--[ ] POST -> /wallet/{playerId}/transaction   -> input (playerId, transactionDto), output(restResponse)
--[ ] GET -> /wallet/{playerId}/transaction -> input (playerId), , output(List<TransactionDto>)
+- [ ] GET -> /wallet/player/{playerId}   -> input (playerId), output (playerDto)
+- [ ] POST -> /wallet/{playerId}/transaction   -> input (playerId, transactionDto), output(restResponse)
+- [ ] GET -> /wallet/{playerId}/transaction -> input (playerId), , output(List<TransactionDto>)
 
 ## Roadmap
 - add spring security
