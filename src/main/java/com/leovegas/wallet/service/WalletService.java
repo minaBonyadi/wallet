@@ -55,7 +55,7 @@ public class WalletService {
 		return new RestResponse(RestResponseType.SUCCESS, "The transaction has just done!");
     }
 
-	private PlayerTransaction createTransaction(Long playerId, TransactionDto transactionDto) {
+	public PlayerTransaction createTransaction(Long playerId, TransactionDto transactionDto) {
 		PlayerTransaction playerTransaction = PlayerTransaction.builder()
 				.player(playerRepository.findById(playerId).orElseThrow(() ->
 						new NotFoundException("Player not found!")))

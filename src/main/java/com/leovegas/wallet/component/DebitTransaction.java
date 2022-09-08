@@ -5,6 +5,7 @@ import com.leovegas.wallet.dto.TransactionType;
 import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

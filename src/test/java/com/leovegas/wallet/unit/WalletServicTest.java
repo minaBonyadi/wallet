@@ -1,5 +1,7 @@
 package com.leovegas.wallet.unit;
 
+import com.leovegas.wallet.component.DebitTransaction;
+import com.leovegas.wallet.component.strategy.TransactionStrategy;
 import com.leovegas.wallet.component.strategy.TransactionStrategyFactory;
 import com.leovegas.wallet.dto.PlayerDto;
 import com.leovegas.wallet.dto.TransactionDto;
@@ -22,10 +24,10 @@ import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -45,16 +47,7 @@ public class WalletServicTest {
     @Test
     void getPlayerById_1() {
         //Given
-        Player player = Player.builder().id(1L).name("mina")
-                .balance(BigDecimal.valueOf(100000))
-                .transactions(Arrays.asList(PlayerTransaction.builder()
-                                .id(1L)
-                        .amount(BigDecimal.valueOf(2000))
-                        .type(TransactionType.CREDIT).build(),
-                        PlayerTransaction.builder()
-                        .id(2L)
-                        .amount(BigDecimal.valueOf(5000))
-                        .type(TransactionType.DEBIT).build())).build();
+        Player player = createSamplePlayer();
         //When
         when(playerRepository.findById(anyLong())).thenReturn(Optional.of(player));
 
@@ -76,7 +69,7 @@ public class WalletServicTest {
         //Given
         //When
         try{
-            walletService.getPlayerById(1L);
+            walletService.getPlayerTransactions(1L);
         }catch (NotFoundException exception) {
             //Then
             assertThat(exception.getMessage()).isEqualTo("Player not found!");
@@ -84,30 +77,58 @@ public class WalletServicTest {
     }
 
     @Test
-    void createAndRunTransaction_1() {
+    void getPlayerTransactions_1() {
         //Given
-        Player player = Player.builder().id(1L).name("mina")
-                .balance(BigDecimal.valueOf(100000))
-                .transactions(Arrays.asList(PlayerTransaction.builder()
-                                .id(1L)
-                                .amount(BigDecimal.valueOf(2000))
-                                .type(TransactionType.CREDIT).build(),
-                        PlayerTransaction.builder()
-                                .id(2L)
-                                .amount(BigDecimal.valueOf(5000))
-                                .type(TransactionType.DEBIT).build())).build();
-
-        TransactionDto transactionDto = TransactionDto.builder().amount(BigDecimal.valueOf(60000))
-                .type(TransactionType.DEBIT).build();
+        Player player = createSamplePlayer();
 
         //When
         when(playerRepository.findById(anyLong())).thenReturn(Optional.of(player));
-//        when(walletService.getPlayerTransactions(any())).thenReturn(playerTransaction);
 
-        RestResponse response = walletService.createAndRunTransaction(1L, transactionDto);
+        List<PlayerTransaction> playerTransactions = walletService.getPlayerTransactions(1L);
 
         //Then
-        assertThat(response.getMessage()).isEqualTo("The transaction has just done!");
-        assertThat(response.getCode()).isEqualTo(RestResponseType.SUCCESS);
+        assertThat(playerTransactions.get(0).getPlayer().getName()).isEqualTo("mina");
+        assertThat(playerTransactions.get(0).getPlayer().getBalance()).isEqualTo(BigDecimal.valueOf(100000));
+
+        assertThat(playerTransactions.get(1).getPlayer().getName()).isEqualTo("mina");
+        assertThat(playerTransactions.get(1).getPlayer().getBalance()).isEqualTo(BigDecimal.valueOf(100000));
+
+        assertThat(playerTransactions.get(0).getAmount()).isEqualTo(BigDecimal.valueOf(2000));
+        assertThat(playerTransactions.get(0).getType()).isEqualTo(TransactionType.CREDIT);
+
+        assertThat(playerTransactions.get(1).getAmount()).isEqualTo(BigDecimal.valueOf(5000));
+        assertThat(playerTransactions.get(1).getType()).isEqualTo(TransactionType.DEBIT);
+    }
+
+    @Test
+    void getPlayerTransactionsWhenPlayerNotExist_2() {
+        //Given
+        //When
+        try{
+            walletService.getPlayerById(1L);
+        }catch (NotFoundException exception) {
+            //Then
+            assertThat(exception.getMessage()).isEqualTo("Player not found!");
+        }
+    }
+
+    private Player createSamplePlayer() {
+        Player player = Player.builder().id(1L).name("mina")
+                .balance(BigDecimal.valueOf(100000)).build();
+
+        player.setTransactions(
+                Arrays.asList(PlayerTransaction.builder()
+                                .id(1L)
+                                .amount(BigDecimal.valueOf(2000))
+                                .type(TransactionType.CREDIT)
+                                .player(player)
+                                .build(),
+                        PlayerTransaction.builder()
+                                .id(2L)
+                                .amount(BigDecimal.valueOf(5000))
+                                .type(TransactionType.DEBIT)
+                                .player(player)
+                                .build()));
+        return player;
     }
 }
