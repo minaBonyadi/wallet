@@ -2,7 +2,6 @@ package com.leovegas.wallet.component;
 
 import com.leovegas.wallet.component.strategy.TransactionStrategy;
 import com.leovegas.wallet.dto.TransactionType;
-import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,10 @@ public class CreditTransaction implements TransactionStrategy {
         return TransactionType.CREDIT;
     }
 
+    /** run a credit transaction
+     *
+     * @param playerTransaction a created transaction of a player
+     */
     @Override
     public void doTransaction(PlayerTransaction playerTransaction) {
         playerTransaction.getPlayer().setBalance(

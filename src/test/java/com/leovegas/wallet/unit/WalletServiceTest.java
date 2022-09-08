@@ -1,29 +1,19 @@
 package com.leovegas.wallet.unit;
 
-import com.leovegas.wallet.component.DebitTransaction;
-import com.leovegas.wallet.component.strategy.TransactionStrategy;
 import com.leovegas.wallet.component.strategy.TransactionStrategyFactory;
-import com.leovegas.wallet.dto.PlayerDto;
-import com.leovegas.wallet.dto.TransactionDto;
 import com.leovegas.wallet.dto.TransactionType;
-import com.leovegas.wallet.dto.rest_response.RestResponse;
-import com.leovegas.wallet.dto.rest_response.RestResponseType;
 import com.leovegas.wallet.exception.NotFoundException;
 import com.leovegas.wallet.model.Player;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
 import com.leovegas.wallet.repository.TransactionRepository;
 import com.leovegas.wallet.service.WalletService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-public class WalletServicTest {
+public class WalletServiceTest {
 
     @MockBean
     private PlayerRepository playerRepository;
@@ -47,7 +37,7 @@ public class WalletServicTest {
     @Test
     void getPlayerById_1() {
         //Given
-        Player player = createSamplePlayer();
+        Player player = Util.createSamplePlayer();
         //When
         when(playerRepository.findById(anyLong())).thenReturn(Optional.of(player));
 
@@ -79,7 +69,7 @@ public class WalletServicTest {
     @Test
     void getPlayerTransactions_1() {
         //Given
-        Player player = createSamplePlayer();
+        Player player = Util.createSamplePlayer();
 
         //When
         when(playerRepository.findById(anyLong())).thenReturn(Optional.of(player));
@@ -110,25 +100,5 @@ public class WalletServicTest {
             //Then
             assertThat(exception.getMessage()).isEqualTo("Player not found!");
         }
-    }
-
-    private Player createSamplePlayer() {
-        Player player = Player.builder().id(1L).name("mina")
-                .balance(BigDecimal.valueOf(100000)).build();
-
-        player.setTransactions(
-                Arrays.asList(PlayerTransaction.builder()
-                                .id(1L)
-                                .amount(BigDecimal.valueOf(2000))
-                                .type(TransactionType.CREDIT)
-                                .player(player)
-                                .build(),
-                        PlayerTransaction.builder()
-                                .id(2L)
-                                .amount(BigDecimal.valueOf(5000))
-                                .type(TransactionType.DEBIT)
-                                .player(player)
-                                .build()));
-        return player;
     }
 }

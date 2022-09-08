@@ -5,7 +5,6 @@ import com.leovegas.wallet.dto.TransactionType;
 import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +20,10 @@ public class DebitTransaction implements TransactionStrategy {
         return TransactionType.DEBIT;
     }
 
+    /** run a debit transaction
+     *
+     * @param playerTransaction a created transaction of a player
+     */
     @Override
     public void doTransaction(PlayerTransaction playerTransaction) {
 

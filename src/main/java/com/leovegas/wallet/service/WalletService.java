@@ -5,7 +5,6 @@ import com.leovegas.wallet.dto.TransactionDto;
 import com.leovegas.wallet.dto.rest_response.RestResponse;
 import com.leovegas.wallet.dto.rest_response.RestResponseType;
 import com.leovegas.wallet.exception.NotFoundException;
-import com.leovegas.wallet.exception.TransactionRunningException;
 import com.leovegas.wallet.model.Player;
 import com.leovegas.wallet.model.PlayerTransaction;
 import com.leovegas.wallet.repository.PlayerRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
