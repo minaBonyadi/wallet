@@ -1,17 +1,15 @@
-# wallet
-# mina bonyadi
-
-## Wallet Model
+# Wallet
+# Mina Bonyadi
 
 ## Description
-This project is a user crud services including an Api.
+This project is a simple wallet debit/credit APIs.
 
-## files
+## Files
 ```
 clone https://github.com/minaBonyadi/wallet.git
 ```
 
-## tools
+## Tools
 
 - [ ] Java 17
 - [ ] Maven
@@ -49,10 +47,6 @@ PlayerTransaction:
 - type: string
 - amount : bigDecimal
 - player : player
-
-## Installation
-
-- After cloning this project just run this command( docker-compose up --build ) in your intellij terminal to install and up this application
 
 ## Usage
 
